@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SmartCrave Chatbot</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chatbox {
+      background: white;
+      width: 380px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #chat {
+      height: 260px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    input {
+      width: 75%;
+      padding: 8px;
+    }
+    button {
+      padding: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chatbox">
+    <h3>SmartCrave Chatbot</h3>
+    <div id="chat"></div>
+    <input id="userInput" placeholder="Ask your question..." />
+    <button onclick="reply()">Send</button>
+  </div>
+
+<script>
+  function reply() {
+    let input = document.getElementById("userInput").value.toLowerCase();
+    let chat = document.getElementById("chat");
+    let response = "Sorry, I don't understand your query.";
+
+    if (input.includes("what is smartcrave"))
+      response = "SmartCrave helps you find restaurants and food based on what you’re craving.";
+
+    else if (input.includes("how does smartcrave work"))
+      response = "You choose your cravings or preferences, and SmartCrave suggests suitable restaurants and dishes.";
+
+    else if (input.includes("restaurants near me"))
+      response = "Yes, SmartCrave shows restaurants near your location.";
+
+    else if (input.includes("search food by craving"))
+      response = "Yes, you can search based on cravings like spicy, sweet, or healthy food.";
+
+    else if (input.includes("book a table") || input.includes("reserve"))
+      response = "Yes, you can reserve a table through SmartCrave.";
+
+    else if (input.includes("confirmation"))
+      response = "Yes, you will receive a confirmation after booking a table.";
+
+    else if (input.includes("pre-order"))
+      response = "Yes, SmartCrave allows you to pre-order fo
