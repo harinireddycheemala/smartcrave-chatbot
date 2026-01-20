@@ -20,16 +20,15 @@
             border: 1px solid #ccc;
             padding: 10px;
             overflow-y: auto;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 14px;
         }
-        .questions {
+        .options {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            margin-bottom: 10px;
         }
-        .question-btn {
+        .option-btn {
             padding: 6px 10px;
             background: #007bff;
             color: white;
@@ -38,8 +37,21 @@
             cursor: pointer;
             font-size: 13px;
         }
-        .question-btn:hover {
+        .option-btn:hover {
             background: #0056b3;
+        }
+        .bot-msg {
+            background: #e1f0ff;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 5px 0;
+        }
+        .user-msg {
+            background: #d1ffd1;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 5px 0;
+            text-align: right;
         }
     </style>
 </head>
@@ -48,45 +60,112 @@
 <div class="chatbox">
     <h2>SmartCrave Chatbot</h2>
     <div id="chat"></div>
-
-    <div class="questions" id="questions"></div>
+    <div class="options" id="options"></div>
 </div>
 
 <script>
-const qaList = [
-    {q: "Hello", a: "Hello! Welcome to SmartCrave 😊"},
-    {q: "What is SmartCrave?", a: "SmartCrave helps you find restaurants and food based on what you’re craving."},
-    {q: "How does SmartCrave work?", a: "You choose your cravings or preferences, and SmartCrave suggests suitable restaurants and dishes."},
-    {q: "Can SmartCrave suggest restaurants near me?", a: "Yes, SmartCrave shows restaurants near your location."},
-    {q: "Can I search food by craving?", a: "Yes, you can search based on cravings like spicy, sweet, or healthy food."},
-    {q: "Can I book a table using SmartCrave?", a: "Yes, you can reserve a table through SmartCrave."},
-    {q: "Will I get a booking confirmation?", a: "Yes, you will receive a confirmation after booking a table."},
-    {q: "Can I order food before reaching the restaurant?", a: "Yes, SmartCrave allows you to pre-order food to reduce waiting time."},
-    {q: "Does SmartCrave support vegetarian food?", a: "Yes, SmartCrave supports vegetarian options."},
-    {q: "Can I check allergy information?", a: "Yes, allergy information is shown with menu items."},
-    {q: "How can I pay using SmartCrave?", a: "You can pay using UPI, cards, or cash at the restaurant."},
-    {q: "Is SmartCrave easy to use?", a: "Yes, SmartCrave is simple and user-friendly."},
-    {q: "Who can use SmartCrave?", a: "Anyone looking for a better dining experience can use SmartCrave."},
-    {q: "Bye", a: "Thanks for using SmartCrave. Enjoy your meal!"}
-];
+// Predefined Q&A as a flow
+const flow = {
+    start: {
+        message: "Hello! Welcome to SmartCrave 😊. How can I help you today?",
+        options: [
+            {text: "About SmartCrave", next: "about"},
+            {text: "Food Options", next: "food"},
+            {text: "Reservations", next: "reservation"},
+            {text: "Payments", next: "payments"}
+        ]
+    },
+    about: {
+        message: "SmartCrave helps you discover food, reserve tables, pre-order, and manage dietary preferences.",
+        options: [
+            {text: "Go Back", next: "start"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    food: {
+        message: "You can search by cravings, like spicy, sweet, or healthy food. You can also see restaurants near you.",
+        options: [
+            {text: "Vegetarian Options", next: "veg"},
+            {text: "Allergy Info", next: "allergy"},
+            {text: "Go Back", next: "start"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    veg: {
+        message: "Yes, SmartCrave supports vegetarian options.",
+        options: [
+            {text: "Back to Food Options", next: "food"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    allergy: {
+        message: "Allergy information is displayed with menu items to help you choose safely.",
+        options: [
+            {text: "Back to Food Options", next: "food"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    reservation: {
+        message: "You can reserve a table through SmartCrave and get a confirmation.",
+        options: [
+            {text: "Pre-Order Food", next: "preorder"},
+            {text: "Go Back", next: "start"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    preorder: {
+        message: "Yes, SmartCrave allows you to pre-order food to reduce waiting time.",
+        options: [
+            {text: "Back to Reservations", next: "reservation"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    payments: {
+        message: "You can pay using UPI, cards, or cash at the restaurant.",
+        options: [
+            {text: "Go Back", next: "start"},
+            {text: "Exit", next: "bye"}
+        ]
+    },
+    bye: {
+        message: "Thanks for using SmartCrave. Enjoy your meal! 👋",
+        options: []
+    }
+};
 
-// Dynamically create clickable question buttons
-const questionsDiv = document.getElementById("questions");
-qaList.forEach(item => {
-    const btn = document.createElement("button");
-    btn.classList.add("question-btn");
-    btn.innerText = item.q;
-    btn.onclick = () => displayAnswer(item.q, item.a);
-    questionsDiv.appendChild(btn);
-});
+let current = "start";
 
-// Function to display chat messages
-function displayAnswer(question, answer) {
+function displayStep(stepKey) {
+    const step = flow[stepKey];
     const chat = document.getElementById("chat");
-    chat.innerHTML += `<p><b>You:</b> ${question}</p>`;
-    chat.innerHTML += `<p><b>Bot:</b> ${answer}</p>`;
+    const optionsDiv = document.getElementById("options");
+
+    // Clear previous options
+    optionsDiv.innerHTML = "";
+
+    // Display bot message
+    chat.innerHTML += `<div class="bot-msg">${step.message}</div>`;
     chat.scrollTop = chat.scrollHeight;
+
+    // Show buttons for options
+    step.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => {
+            // Add user message
+            chat.innerHTML += `<div class="user-msg">${opt.text}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            // Display next step after short delay
+            setTimeout(() => displayStep(opt.next), 300);
+        };
+        optionsDiv.appendChild(btn);
+    });
 }
+
+// Initialize chat
+displayStep(current);
 </script>
 
 </body>
